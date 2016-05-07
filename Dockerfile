@@ -27,7 +27,7 @@ RUN apt-get -q update && apt-get -y -q install\
 
 RUN useradd --user-group shinken
 RUN useradd --user-group graphite
-RUN pip install pycurl cherrypy shinken
+RUN pip install pycurl cherrypy shinken==2.0.3
 
 # Configure snmpd
 COPY vagrant_provision/snmpd.conf.template /etc/snmp/snmpd.conf
@@ -63,15 +63,10 @@ COPY vagrant_provision/carbon.init.template /etc/init.d/carbon
 RUN chmod 755 /etc/init.d/carbon
 RUN update-rc.d carbon defaults
 
-# Make the lib folder available globally for the shinken and vagrant users
-RUN mkdir -p /home/shinken/.local/lib/python2.7/site-packages
-RUN ln -s /sources/lib/on_reader/on_reader /home/shinken/.local/lib/python2.7/site-packages/on_reader
-RUN chown -R shinken:shinken /home/shinken
-
 # Start things up
 RUN echo "/etc/init.d/carbon start" >> /run.sh
-RUN echo "service shinken restart" >> /run.sh
-RUN echo "tail -f /var/log/syslog" >> /run.sh
+RUN echo "service shinken start" >> /run.sh
+RUN echo "tail -f /var/log/faillog" >> /run.sh
 RUN chmod +x /run.sh
 
-ENTRYPOINT /run.sh
+CMD /run.sh
